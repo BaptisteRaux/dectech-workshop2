@@ -3,7 +3,7 @@ name: Deploy to Pinata
 on:
   push:
     branches:
-      - main  # ou la branche que tu utilises
+      - main  # Remplace avec ta branche principale si nécessaire
 
 jobs:
   deploy:
@@ -13,33 +13,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the project
-        run: npm run build  # Si tu projet nécessite un build, adapte cette commande
-
       - name: Deploy to Pinata
         env:
           PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
           PINATA_API_SECRET: ${{ secrets.PINATA_API_SECRET }}
         run: |
-          # Installer l'outil Pinata SDK
+          # Installer Pinata SDK
           npm install @pinata/sdk
           
-          # Créer un script simple pour uploader ton dossier 'build' sur Pinata
+          # Uploader les fichiers du répertoire 'Torrent' vers Pinata
           node -e "
             const fs = require('fs');
             const path = require('path');
             const pinataSDK = require('@pinata/sdk');
             const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_SECRET);
 
-            const directoryPath = path.join(__dirname, 'build');  // Chemin du répertoire build
+            const directoryPath = path.join(__dirname, 'Torrent');  # Utilise le dossier 'Torrent'
             const files = fs.readdirSync(directoryPath);
 
             const filePromises = files.map(file => {
