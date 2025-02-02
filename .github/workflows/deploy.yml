@@ -15,9 +15,9 @@ jobs:
       
       - name: Install IPFS
         run: |
-          # Télécharger et installer la dernière version d'IPFS
-          curl -O https://dist.ipfs.io/go-ipfs/v0.13.1/go-ipfs_v0.13.1_linux-amd64.tar.gz
-          tar -xvzf go-ipfs_v0.13.1_linux-amd64.tar.gz
+          # Télécharger la dernière version d'IPFS depuis la source officielle
+          curl -L https://dist.ipfs.io/go-ipfs/latest/go-ipfs-linux-amd64.tar.gz -o go-ipfs.tar.gz
+          tar -xvzf go-ipfs.tar.gz
           sudo mv go-ipfs/ipfs /usr/local/bin/
           ipfs init --profile server
 
@@ -37,4 +37,3 @@ jobs:
             -H "pinata_api_key: $PINATA_API_KEY" \
             -H "pinata_secret_api_key: $PINATA_API_SECRET" \
             -d "{\"cid\": \"$CID\"}"
-
