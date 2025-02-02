@@ -1,33 +1,40 @@
-name: Deploy to Pinata
+name: Deploy to IPFS
 
 on:
   push:
     branches:
-      - main
+      - main  
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Install IPFS
+        run: |
+          # Télécharger et installer la dernière version d'IPFS
+          curl -O https://dist.ipfs.io/go-ipfs/v0.13.1/go-ipfs_v0.13.1_linux-amd64.tar.gz
+          tar -xvzf go-ipfs_v0.13.1_linux-amd64.tar.gz
+          sudo mv go-ipfs/ipfs /usr/local/bin/
+          ipfs init --profile server
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18'
+      - name: Add files to IPFS
+        run: |
+          # Ajouter tous les fichiers du dépôt au réseau IPFS
+          ipfs add -r . # Cela retournera un CID que tu pourras utiliser plus tard
 
-    - name: Install dependencies
-      run: |
-        npm install -g pinata-sdk
+      - name: Pin to Pinata IPFS Service
+        env:
+          PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
+          PINATA_API_SECRET: ${{ secrets.PINATA_API_SECRET }}
+        run: |
+          # Utiliser curl pour épingler l'objet IPFS sur Pinata
+          CID=$(ipfs add -r . | tail -n 1 | awk '{print $2}')  # Récupère le dernier CID retourné
+          curl -X POST https://api.pinata.cloud/pinning/pinByCid \
+            -H "pinata_api_key: $PINATA_API_KEY" \
+            -H "pinata_secret_api_key: $PINATA_API_SECRET" \
+            -d "{\"cid\": \"$CID\"}"
 
-    - name: Authenticate with Pinata
-      run: |
-        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
-        echo "PINATA_API_KEY=${{ secrets.PINATA_API_KEY }}" >> $GITHUB_ENV
-        echo "PINATA_API_SECRET=${{ secrets.PINATA_API_SECRET }}" >> $GITHUB_ENV
-
-    - name: Deploy to Pinata
-      run: |
-        pinata upload ./torrent --pinata-api-key $PINATA_API_KEY --pinata-api-secret $PINATA_API_SECRET
