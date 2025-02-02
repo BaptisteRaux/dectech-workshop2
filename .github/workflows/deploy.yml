@@ -1,0 +1,33 @@
+name: Deploy to Pinata
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        npm install -g pinata-sdk
+
+    - name: Authenticate with Pinata
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+        echo "PINATA_API_KEY=${{ secrets.PINATA_API_KEY }}" >> $GITHUB_ENV
+        echo "PINATA_API_SECRET=${{ secrets.PINATA_API_SECRET }}" >> $GITHUB_ENV
+
+    - name: Deploy to Pinata
+      run: |
+        pinata upload ./torrent --pinata-api-key $PINATA_API_KEY --pinata-api-secret $PINATA_API_SECRET
