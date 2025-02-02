@@ -1,36 +1,56 @@
-name: Deploy to IPFS
+name: Deploy to Pinata
 
 on:
   push:
     branches:
-      - main  
+      - main  # ou la branche que tu utilises
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install IPFS via script
-        run: |
-          # Télécharger et installer IPFS via le script d'installation officiel
-          curl https://raw.githubusercontent.com/ipfs/go-ipfs/master/install.sh | sudo bash
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-      - name: Add files to IPFS
-        run: |
-          # Ajouter tous les fichiers du dépôt au réseau IPFS
-          ipfs add -r . # Cela retournera un CID que tu pourras utiliser plus tard
+      - name: Install dependencies
+        run: npm install
 
-      - name: Pin to Pinata IPFS Service
+      - name: Build the project
+        run: npm run build  # Si tu projet nécessite un build, adapte cette commande
+
+      - name: Deploy to Pinata
         env:
           PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
           PINATA_API_SECRET: ${{ secrets.PINATA_API_SECRET }}
         run: |
-          # Utiliser curl pour épingler l'objet IPFS sur Pinata
-          CID=$(ipfs add -r . | tail -n 1 | awk '{print $2}')  # Récupère le dernier CID retourné
-          curl -X POST https://api.pinata.cloud/pinning/pinByCid \
-            -H "pinata_api_key: $PINATA_API_KEY" \
-            -H "pinata_secret_api_key: $PINATA_API_SECRET" \
-            -d "{\"cid\": \"$CID\"}"
+          # Installer l'outil Pinata SDK
+          npm install @pinata/sdk
+          
+          # Créer un script simple pour uploader ton dossier 'build' sur Pinata
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const pinataSDK = require('@pinata/sdk');
+            const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_SECRET);
+
+            const directoryPath = path.join(__dirname, 'build');  // Chemin du répertoire build
+            const files = fs.readdirSync(directoryPath);
+
+            const filePromises = files.map(file => {
+              return pinata.pinFromFS(path.join(directoryPath, file));
+            });
+
+            Promise.all(filePromises)
+              .then(results => {
+                console.log('Successfully uploaded to Pinata:', results);
+              })
+              .catch(err => {
+                console.error('Error uploading to Pinata:', err);
+              });
+          "
