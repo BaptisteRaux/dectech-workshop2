@@ -13,10 +13,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Install IPFS using a GitHub Action
-        uses: ipfs-shipyard/ipfs-github-action@v2
-        with:
-          ipfs_version: 'latest'  # Installe la dernière version stable d'IPFS
+      - name: Install IPFS via script
+        run: |
+          # Télécharger et installer IPFS via le script d'installation officiel
+          curl https://raw.githubusercontent.com/ipfs/go-ipfs/master/install.sh | sudo bash
 
       - name: Add files to IPFS
         run: |
