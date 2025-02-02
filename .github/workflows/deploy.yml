@@ -12,14 +12,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      
-      - name: Install IPFS
+
+      - name: Install IPFS via script
         run: |
-          # Télécharger la dernière version d'IPFS depuis la source officielle
-          curl -L https://dist.ipfs.io/go-ipfs/latest/go-ipfs-linux-amd64.tar.gz -o go-ipfs.tar.gz
-          tar -xvzf go-ipfs.tar.gz
-          sudo mv go-ipfs/ipfs /usr/local/bin/
-          ipfs init --profile server
+          # Télécharger et installer IPFS via le script d'installation officiel
+          curl https://raw.githubusercontent.com/ipfs/go-ipfs/master/install.sh | sudo bash
 
       - name: Add files to IPFS
         run: |
