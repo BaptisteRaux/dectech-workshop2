@@ -3,7 +3,7 @@ name: Deploy to Pinata
 on:
   push:
     branches:
-      - main  # Remplace avec ta branche principale si nécessaire
+      - main  
 
 jobs:
   deploy:
@@ -18,7 +18,6 @@ jobs:
           PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
           PINATA_API_SECRET: ${{ secrets.PINATA_API_SECRET }}
         run: |
-          # Installer Pinata SDK
           npm install @pinata/sdk
           
           # Uploader les fichiers du répertoire 'Torrent' vers Pinata
@@ -28,7 +27,7 @@ jobs:
             const pinataSDK = require('@pinata/sdk');
             const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_SECRET);
 
-            const directoryPath = path.join(__dirname, 'Torrent');  # Utilise le dossier 'Torrent'
+            const directoryPath = path.join(__dirname, 'Torrent');  
             const files = fs.readdirSync(directoryPath);
 
             const filePromises = files.map(file => {
